@@ -4,6 +4,7 @@ require 'json'
 require 'digest'
 require 'io/console'
 require 'ostruct'
+require 'uri'
 
 Bundler.require(:default)
 

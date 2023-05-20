@@ -19,7 +19,11 @@ module BooksDL
 
     def perform
       job('取得 META-INF/container.xml') { fetch_container_file }
-      job('取得 META-INF/encryption.xml') { fetch_encryption_file }
+      begin
+        job('取得 META-INF/encryption.xml') { fetch_encryption_file }
+      rescue
+        puts "No encryption file gg"
+      end
       job("取得 #{book[:root_file_path]} 檔案") { fetch_root_file }
       fetch_book_content # 由內部顯示 job 訊息
       job('製作 epub 檔案') { build_epub }
@@ -37,6 +41,8 @@ module BooksDL
     def fetch_container_file
       path = 'META-INF/container.xml'
       content = api.fetch(path)
+      Dir.mkdir "./temp/#{@book_id}/#{File.dirname(path)}" unless Dir.exist? "./temp/#{@book_id}/#{File.dirname(path)}"
+      File.open("./temp/#{@book_id}/#{path}", 'w') {|f| f.write content}
       container_file = Files::Container.new(path, content)
 
       book[:root_file_path] = container_file.root_file_path
@@ -71,8 +77,17 @@ module BooksDL
 
       total = file_paths.size
       file_paths.each_with_index do |path, index|
-        puts "#{index + 1}/#{total} => 開始下載 #{path}"
-        content = api.fetch(path)
+
+        if File.exists? "./temp/#{@book_id}/#{path}"
+          puts "#{path} 已存在，直接載入"
+          content = File.open("./temp/#{@book_id}/#{path}", 'rb').read
+        else
+          puts "#{index + 1}/#{total} => 開始下載 #{path}"
+          content = api.fetch(path)
+          `mkdir -p '#{File.dirname("./temp/#{@book_id}/#{path}")}'`
+          File.open("./temp/#{@book_id}/#{path}", 'wb') {|f| f.write content}
+          sleep 0.5
+        end
 
         book[:files] << BaseFile.new(path, content)
       end

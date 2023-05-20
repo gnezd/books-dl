@@ -9,15 +9,20 @@ module BooksDL
     # API ENDPOINTS
     #
     # rubocop:disable Metrics/LineLength
-    CART_URL = 'https://db.books.com.tw/shopping/cart_list.php'.freeze
+    CART_URL = 'https://db.books.com.tw/shopping/cart_list.php?loc=tw_customer_001'
     LOGIN_HOST = 'https://cart.books.com.tw'.freeze
-    LOGIN_PAGE_URL = "https://cart.books.com.tw/member/login?url=#{CART_URL}".freeze
+    LOGIN_PAGE_URL = "https://cart.books.com.tw/member/login?url=#{CART_URL}"
     LOGIN_ENDPOINT_URL = 'https://cart.books.com.tw/member/login_do/'.freeze
+    #LOGIN_ENDPOINT_URL = 'https://cart.books.com.tw/member/login?loc=customer_003&url=https%3A%2F%2Fwww.books.com.tw%2F'.freeze
 
-    DEVICE_REG_URL = 'https://appapi-ebook.books.com.tw/V1.3/CMSAPIApp/DeviceReg'.freeze
-    OAUTH_URL = 'https://appapi-ebook.books.com.tw/V1.3/CMSAPIApp/LoginURL?type=&device_id=&redirect_uri=https%3A%2F%2Fviewer-ebook.books.com.tw%2Fviewer%2Flogin.html'.freeze
-    OAUTH_ENDPOINT_URL = 'https://appapi-ebook.books.com.tw/V1.3/CMSAPIApp/MemberLogin?code='.freeze
-    BOOK_DL_URL = 'https://appapi-ebook.books.com.tw/V1.3/CMSAPIApp/BookDownLoadURL'.freeze
+    #DEVICE_REG_URL = 'https://appapi-ebook.books.com.tw/V1.3/CMSAPIApp/DeviceReg'.freeze
+    #OAUTH_URL = 'https://appapi-ebook.books.com.tw/V1.3/CMSAPIApp/LoginURL?type=&device_id=&redirect_uri=https%3A%2F%2Fviewer-ebook.books.com.tw%2Fviewer%2Flogin.html'.freeze
+    #OAUTH_ENDPOINT_URL = 'https://appapi-ebook.books.com.tw/V1.3/CMSAPIApp/MemberLogin?code='.freeze
+    #BOOK_DL_URL = 'https://appapi-ebook.books.com.tw/V1.3/CMSAPIApp/BookDownLoadURL'.freeze
+    DEVICE_REG_URL = 'https://appapi-ebook.books.com.tw/V1.7/CMSAPIApp/DeviceReg'.freeze
+    OAUTH_URL = 'https://appapi-ebook.books.com.tw/V1.7/CMSAPIApp/LoginURL?type=&device_id=&redirect_uri=https%3A%2F%2Fviewer-ebook.books.com.tw%2Fviewer%2Flogin.html'.freeze
+    OAUTH_ENDPOINT_URL = 'https://appapi-ebook.books.com.tw/V1.7/CMSAPIApp/MemberLogin?code='.freeze
+    BOOK_DL_URL = 'https://appapi-ebook.books.com.tw/V1.7/CMSAPIApp/BookDownLoadURL'.freeze
     # rubocop:enable Metrics/LineLength
 
     def initialize(book_id)
@@ -52,11 +57,12 @@ module BooksDL
 
         data = {
           form: {
-            device_id: '2b2475e7-da58-4cfe-aedf-ab4e6463757b',
+            #device_id: '2b2475e7-da58-4cfe-aedf-ab4e6463757b',
+            device_id: 'BC67F786-C89E-4EE7-B61E-83ABACAD90AC',
             language: 'zh-TW',
             os_type: 'WEB',
             os_version: default_headers[:'user-agent'],
-            screen_resolution: '1680X1050',
+            screen_resolution: '2560X1440',
             screen_dpi: 96,
             device_vendor: 'Google Inc.',
             device_model: 'web'
@@ -73,7 +79,8 @@ module BooksDL
         # remove old cookies
         current_cookie.reject! { |key| %w[CmsToken redirect_uri normal_redirect_uri DownloadToken].include?(key) }
         puts '註冊 Fake device 中...'
-        post(DEVICE_REG_URL, data, headers)
+        get_payload = URI.encode_www_form(data[:form])
+        get(DEVICE_REG_URL+"?"+get_payload, headers)
 
         puts '透過 OAuth 取得 CmsToken...'
         resp = get(OAUTH_URL)
@@ -87,7 +94,7 @@ module BooksDL
     end
 
     def login
-      return if logged?
+      #return if logged?
 
       username, password = get_account_from_stdin
       login_page = get(LOGIN_PAGE_URL).body.to_s
@@ -101,7 +108,7 @@ module BooksDL
         'X-Requested-With': 'XMLHttpRequest'
       }
 
-      post(LOGIN_ENDPOINT_URL, data, headers)
+      post_response=post(LOGIN_ENDPOINT_URL, data, headers)
       return if logged?
 
       puts "#{'-' * 10} 登入失敗，請再試一次 #{'-' * 10}\n"
@@ -110,7 +117,11 @@ module BooksDL
 
     def logged?
       @logged = begin
-        response = get(CART_URL)
+      headers = {
+        'Host': 'db.books.com.tw',
+        'Referer': 'https://www.books.com.tw/'
+      }
+        response = get(CART_URL, headers)
 
         response.status == 200
       end
@@ -140,6 +151,7 @@ module BooksDL
         raise "取得 `#{file_name}` 失敗。 Status: #{response.status}"
       end
 
+      puts "HTTP response"
       save_cookie(response)
       response
     end
@@ -169,9 +181,9 @@ module BooksDL
 
     def default_headers
       @default_headers ||= {
-        'user-agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_2) ' \
-                      'AppleWebKit/537.36 (KHTML, like Gecko) ' \
-                      'Chrome/71.0.3578.98 Safari/537.36'
+        'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '\
+                      'AppleWebKit/537.36 (KHTML, like Gecko) '\
+                      'Chrome/113.0.0.0 Safari/537.36'
       }
     end
 
