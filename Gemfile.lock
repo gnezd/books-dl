@@ -14,6 +14,7 @@ GEM
     ffi-compiler (1.0.1)
       ffi (>= 1.0.0)
       rake
+    fileutils (1.7.1)
     http (4.2.0)
       addressable (~> 2.3)
       http-cookie (~> 1.0)
@@ -60,6 +61,7 @@ PLATFORMS
 DEPENDENCIES
   awesome_print
   byebug
+  fileutils
   http
   nokogiri
   pry
