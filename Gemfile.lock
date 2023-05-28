@@ -5,6 +5,7 @@ GEM
       public_suffix (>= 2.0.2, < 5.0)
     awesome_print (1.8.0)
     byebug (11.0.1)
+    coderay (1.1.3)
     diff-lcs (1.3)
     domain_name (0.5.20190701)
       unf (>= 0.0.5, < 1.0.0)
@@ -23,11 +24,15 @@ GEM
     http-form_data (2.1.1)
     http-parser (1.2.1)
       ffi-compiler (>= 1.0, < 2.0)
+    method_source (1.0.0)
     mini_portile2 (2.4.0)
     nokogiri (1.10.5)
       mini_portile2 (~> 2.4.0)
     nokogiri (1.10.5-x64-mingw32)
       mini_portile2 (~> 2.4.0)
+    pry (0.14.2)
+      coderay (~> 1.1)
+      method_source (~> 1.0)
     public_suffix (4.0.1)
     rake (13.0.1)
     rspec (3.9.0)
@@ -57,6 +62,7 @@ DEPENDENCIES
   byebug
   http
   nokogiri
+  pry
   rspec
   rubyzip (>= 1.0.0)
 
