@@ -1,4 +1,5 @@
 require 'zip'
+require 'fileutils'
 
 module BooksDL
   class Downloader
@@ -40,8 +41,8 @@ module BooksDL
 
     def fetch_container_file
       path = 'META-INF/container.xml'
-      content = api.fetch(path)
-      Dir.mkdir "./temp/#{@book_id}/#{File.dirname(path)}" unless Dir.exist? "./temp/#{@book_id}/#{File.dirname(path)}"
+      content = api.fetch(path) 
+      FileUtils.mkdir_p "./temp/#{@book_id}/#{File.dirname(path)}" unless Dir.exist? "./temp/#{@book_id}/#{File.dirname(path)}"
       File.open("./temp/#{@book_id}/#{path}", 'w') {|f| f.write content}
       container_file = Files::Container.new(path, content)
 
@@ -84,7 +85,7 @@ module BooksDL
         else
           puts "#{index + 1}/#{total} => 開始下載 #{path}"
           content = api.fetch(path)
-          `mkdir -p '#{File.dirname("./temp/#{@book_id}/#{path}")}'`
+          FileUtils.mkdir_p "#{File.dirname("./temp/#{@book_id}/#{path}")}"
           File.open("./temp/#{@book_id}/#{path}", 'wb') {|f| f.write content}
           sleep 0.5
         end
